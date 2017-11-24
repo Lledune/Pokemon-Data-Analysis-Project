@@ -1,0 +1,86 @@
+---
+title: "Projet LSTAT2110 - Analyse des données"
+author: "Ledune Lucien - 39301400 - DATS2M"
+date: "Date de soumission : "
+output:
+  html_document:
+    df_print: paged
+---
+
+<!-- En haut, compléter/supprimer selon besoin. -->
+<!-- Voir les consignes pour le projet. -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(comment = "")
+```
+
+# **Introduction**
+
+Pokémon est une franchise commercialisée par "The pokémon company", une société gérée par Nintendo, Game Freaks et Creatures.  
+
+Même si la franchise à d'abord commercialisé des jeux vidéos, celle-ci s'est étendue à d'autres marchés suite à la popularité montante de ses jeux.  
+
+L'ensemble des jeux pokémon à totalisé plus de 290 millions de ventes dans le monde. 
+Les deux premiers jeux pokémon sont sortis en même temps au Japon en 1996. Il s'agissait de Pokémon version Rouge/Bleue. C'est sur cette première génération de 151 spécimens que portera notre analyse.  
+
+Le principe du jeu est celui-ci : On incarne un personnage qui parcours le monde à la recherche de pokémon, le but étant de tous les attraper. Ils servent majoritairement dans des combats, ils possèdent un certains nombre de statistiques (décrites dans la partie suivante) déterminant comment ils se comportent dans les combats. 
+
+Un autre point important est l'évolution. Àprès avoir combattu, certains pokémons peuvent évoluer, c'est à dire changer de forme et de statistiques. (Il pourra être intéressant de voir comment changent les pokémons évolués).
+
+# **Présentation des données, analyse descriptive**
+
+###*Présentation des données*
+
+Pour réaliser ce projet d'analyses de données, nous devions trouver un jeu de données disposant d'au moins 30 individus, 6 variables continues, et une variable discrète pour l'analyse discriminante linéaire.   
+  
+Le set de données retenu a été trouvé sur www.kaggle.com, et représente les 800 différents pokémons existants dans les 7 générations du jeu, représentés par 13 variables.  
+
+Cependant afin de faciliter l'analyse, certaines lignes et variables seront omises.  
+
+En effet pour l'analyse en composantes principales nous ne conserveront que les variables continues, car celle-ci ne s'applique pas aux variables discrètes (classement).  
+
+Ensuite afin de faciliter l'analyse discriminante linéaire ainsi que la représentation des données nous effectuerons les analyses sur la première génération uniquement, soit les 151 premiers pokémons.
+
+Les différentes variables sont :  
+
+* X. : Un nombre désignant le numéro du pokémon, cette variable sera supprimée car peut pertinante dans notre analyse.   
+* Name : Le nom du pokémon, bien qu'ils ne seront pas utilisés à proprement parler dans l'analyse nous les conserverons afin de mieux représenter les pokémons sur certains graphiques. 
+
+* Type 1 : Le type principal du pokémon. 
+
+* Type 2 : L'éventuel type secondaire du pokémon. 
+
+* Total : Une variable représentant la somme des 6 prochaines variables continues. Celle-ce sera omise pour l'analyse en composantes principales car il est évident qu'elle sera corrélée avec les autres variables discrètes comme il s'agit de leur somme. 
+
+* HP : Les points de vie du pokémon, c'est le nombre de dégats qu'il peut prendre. 
+
+* Attack et Sp Attack : Représente la capacité offensive.  
+
+* Defense et Sp Defense : Représente la capacité défensive.
+
+* Speed : C'est la vitesse du pokémon, l'individu ayant la plus grande valeur ici attaquera en premier. 
+
+* Generation : Représente la génération du pokémon, cetta variable nous permettra de sélectionner les pokémons issus de la première génération. 
+
+* Legendary : Boolean (True/False) indiquant si un pokémon est légendaire ou non.
+
+###*Analyse descriptive*
+
+# Analyse en Composantes Principales
+
+
+
+# Clustering 
+
+
+
+# Analyse des correspondances
+
+
+
+# Conclusion
+
+
+
+# Annexes
