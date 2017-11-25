@@ -11,8 +11,9 @@ output:
 <!-- Voir les consignes pour le projet. -->
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(comment = "")
+knitr::opts_chunk$set(fig.align='center')
 ```
 
 # **Introduction**
@@ -28,6 +29,10 @@ Le principe du jeu est celui-ci : On incarne un personnage qui parcours le monde
 
 Un autre point important est l'évolution. Àprès avoir combattu, certains pokémons peuvent évoluer, c'est à dire changer de forme et de statistiques. (Il pourra être intéressant de voir comment changent les pokémons évolués).
 
+Il existe aussi un type particulier de pokémons, les légendaires, ceux-ci sont généralement plus rare et plus puissants que les autres, aussi nous pourrons essayer de les identifier grâce à l'analyse linéaire discriminante. 
+  
+  
+  
 # **Présentation des données, analyse descriptive**
 
 ###*Présentation des données*
@@ -65,10 +70,112 @@ Les différentes variables sont :
 
 * Legendary : Boolean (True/False) indiquant si un pokémon est légendaire ou non.
 
-###*Analyse descriptive*
+###*Analyse descriptive*  
+
+```{r, echo = FALSE}
+#Preparing data
+Data = read.csv("https://raw.githubusercontent.com/dfghdf89/Pokemon-Data-Analysis-Project/master/Pokemon.csv", sep = ";")
+
+#Keeping gen1 only
+Data = subset(Data, Data$Generation == 1)
+
+
+
+```
+
+
+Pour commencer nous pouvons observer la répartition des pokémons en fonction de certaines variables. Premièrement la distribution des pokémons en fonctions de leur type, ainsi que le nombre de légendaires. 
+
+```{r, echo = FALSE}
+library(ggplot2)
+ggplot(data = Data, aes(Data$Type.1, stat = "count", fill = Data$Type.1)) + geom_bar() + theme_bw() + scale_fill_manual(values = c("#A6B91A", "#6F35FC", "#F7D02C", "#D685AD", "#C22E28", "#EE8130", "#735797", "#7AC74C", "#E2BF65", "#96D9D6", "#A8A77A", "#A33EA1", "#F95587", "#B6A136", "#6390F0")) + ggtitle("Répartition par type") + xlab("Type") + ylab("Nombre") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill=FALSE)
+
+ggplot(data = Data, aes(Data$Legendary, stat = "count", fill = Data$Legendary)) + geom_bar() + ggtitle("Nombre de pokémons légendaires") + xlab("Légendaire") + ylab("Nombre") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill=FALSE)
+
+
+```
+
+Nous pouvons observer sur le premier graphique que la répartition des spécimens par type est très inégale, certains type (water, normal,...) disposent d'un grand nombre d'individus contrairement à d'autres (dragon, fairy,...)  
+Sur le deuxième graphique nous pouvons voir que les pokémons légendaires sont très peu nombreux (il en existe 4 dans cette génération).  
+
+Le prochain graphique va comparer les pokémons légendaires aux autres en fonction de la somme de leur statistiques (variable "total").
+
+```{r}
+ggplot(data = Data, aes(Data$Legendary, Data$Total, colour = Data$Legendary)) + geom_point() + ggtitle("Statistiques légendaires vs normaux") + xlab("Légendaire") + ylab("Total") + theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+Il évident au vu du graphique que les pokémons légendaires disposent, en moyenne, de statistiques bien plus élevées. Nous pourrons donc certainement les distinguer (ainsi que de nouveaux individus) des autres grâce à l'analyse discriminante linéaire.   
+
+Nous allons maintenant nous intéresser à la distribution des différentes statistiques. 
+
+```{r}
+#total 
+plot(density(Data$Total), xlab = "Total", ylab = "Density", main = "Density of Total")
+par(mfrow = c(2,3))
+plot(density(Data$HP), xlab = "HP", ylab = "Density", main = "Density of HP")
+plot(density(Data$Attack), xlab = "Attack", ylab = "Density", main = "Density of Attack")
+plot(density(Data$Defense), xlab = "Defense", ylab = "Density", main = "Density of Defense")
+plot(density(Data$Sp..Atk), xlab = "Special Attack", ylab = "Density", main = "Density of Special Attack")
+plot(density(Data$Sp..Def), xlab = "Special Defense", ylab = "Density", main = "Density of Special Defense")
+plot(density(Data$Speed), xlab = "Speed", ylab = "Density", main = "Density of Speed")
+
+
+```
+
+Nous pouvons voir que dans l'ensemble, les statistiques semblent suivre une loi gaussienne. Avec deux pics autours de 300 et 500 pour le total. (Sûrement expliqué par la différence de moyenne statistique entre un pokémon non-évolué et son évolution).
+
+Regardons maintenant la matrice de corrélations des données. 
+
+```{r}
+#Keeping only continues variables
+DataPCA = Data[,6:11]
+
+library(corrplot)
+corrmat = cor(DataPCA)
+corrplot(corrmat, method = "circle")
+
+```
+
+Sur ce graphique, nous pouvons voir que la majorité des variables sont positivement corrélées, ce qui peut vouloir dire que lorsqu'un individu gagne des statistiques, il en gagne de presque tous les types.  
+Cependant il y a des exceptions, ainsi la vitesse est négativement corrélée avec les HP et la Défense. Ce résultat est assez intuitif et signifie globalement que plus un individu est rapide, moins il sera résistant.  
+```{r}
+ggplot(data = Data, aes(Data$Speed, Data$HP)) + geom_point() + ggtitle("Speed vs HP") + xlab("Speed") + ylab("HP") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill=FALSE)
+
+```
+Sur le graphique nous voyons que cette corrélation est assez légère.
+
+Voici les autres relations intéressantes : 
+
+* L'attaque et la défense sont positivement corrélées. 
+* L'attaque spéciale et la défense spéciale sont également positivement corrélées
+
+```{r}
+par(mfrow = c(1,2))
+plot(Data$Attack, Data$Defense, xlab = "Attack", ylab = "Defense", main = "Attack vs Defense")
+plot(Data$Sp..Atk, Data$Sp..Def, xlab = "Attack Sp.", ylab = "Defense Sp.", main = "Attack Sp. vs Defense Sp.")
+```
+
 
 # Analyse en Composantes Principales
 
+Nous allons maintenant passer à l'analyse en composantes principales de notre jeu de données.  
+
+```{r}
+library(knitr)
+library(FactoMineR)
+eigenvectors = eigen(cor(scale(DataPCA)))
+eigenvectors = eigenvectors$vectors
+colnames(eigenvectors) = c("E1", "E2", "E3", "E4", "E5", "E6")
+
+res.pca = PCA(as.matrix(DataPCA), ncp = 6, scale = T)
+
+```
+
+####Corrélation des axes et des variables
+```{r}
+kable(res.pca$var$cor, caption = )
+```
 
 
 # Clustering 
