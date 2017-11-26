@@ -1,10 +1,11 @@
 ---
-title: "Projet LSTAT2110 - Analyse des données"
+title: "Projet LSTAT2110 - Analyse des donnÃƒÂ©es"
 author: "Ledune Lucien - 39301400 - DATS2M"
-date: "Date de soumission : "
+date: 'Date de soumission : '
 output:
-  html_document:
-    df_print: paged
+  pdf_document: default
+  html_document: null
+  df_print: paged
 ---
 
 <!-- En haut, compléter/supprimer selon besoin. -->
@@ -14,6 +15,7 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(comment = "")
 knitr::opts_chunk$set(fig.align='center')
+knitr::opts_chunk$set(fig.width=6, fig.height=4)
 ```
 
 # **Introduction**
@@ -70,7 +72,7 @@ Les différentes variables sont :
 
 * Legendary : Boolean (True/False) indiquant si un pokémon est légendaire ou non.
 
-###*Analyse descriptive*  
+###*Analyse descriptive*
 
 ```{r, echo = FALSE}
 #Preparing data
@@ -79,14 +81,12 @@ Data = read.csv("https://raw.githubusercontent.com/dfghdf89/Pokemon-Data-Analysi
 #Keeping gen1 only
 Data = subset(Data, Data$Generation == 1)
 
-
-
 ```
 
 
 Pour commencer nous pouvons observer la répartition des pokémons en fonction de certaines variables. Premièrement la distribution des pokémons en fonctions de leur type, ainsi que le nombre de légendaires. 
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.width=6, fig.height=2.5}
 library(ggplot2)
 ggplot(data = Data, aes(Data$Type.1, stat = "count", fill = Data$Type.1)) + geom_bar() + theme_bw() + scale_fill_manual(values = c("#A6B91A", "#6F35FC", "#F7D02C", "#D685AD", "#C22E28", "#EE8130", "#735797", "#7AC74C", "#E2BF65", "#96D9D6", "#A8A77A", "#A33EA1", "#F95587", "#B6A136", "#6390F0")) + ggtitle("Répartition par type") + xlab("Type") + ylab("Nombre") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill=FALSE)
 
@@ -107,11 +107,15 @@ ggplot(data = Data, aes(Data$Legendary, Data$Total, colour = Data$Legendary)) + 
 
 Il évident au vu du graphique que les pokémons légendaires disposent, en moyenne, de statistiques bien plus élevées. Nous pourrons donc certainement les distinguer (ainsi que de nouveaux individus) des autres grâce à l'analyse discriminante linéaire.   
 
-Nous allons maintenant nous intéresser à la distribution des différentes statistiques. 
+Nous allons maintenant nous intéresser à la distribution des différentes statistiques.
+```{r, fig.width=6, fig.height=2.5}
+plot(density(Data$Total), xlab = "Total", ylab = "Density", main = "Density of Total")
+
+```
+
 
 ```{r}
 #total 
-plot(density(Data$Total), xlab = "Total", ylab = "Density", main = "Density of Total")
 par(mfrow = c(2,3))
 plot(density(Data$HP), xlab = "HP", ylab = "Density", main = "Density of HP")
 plot(density(Data$Attack), xlab = "Attack", ylab = "Density", main = "Density of Attack")
@@ -127,7 +131,7 @@ Nous pouvons voir que dans l'ensemble, les statistiques semblent suivre une loi 
 
 Regardons maintenant la matrice de corrélations des données. 
 
-```{r}
+```{r, fig.width=6, fig.height=3}
 #Keeping only continues variables
 DataPCA = Data[,6:11]
 
@@ -138,19 +142,19 @@ corrplot(corrmat, method = "circle")
 ```
 
 Sur ce graphique, nous pouvons voir que la majorité des variables sont positivement corrélées, ce qui peut vouloir dire que lorsqu'un individu gagne des statistiques, il en gagne de presque tous les types.  
-Cependant il y a des exceptions, ainsi la vitesse est négativement corrélée avec les HP et la Défense. Ce résultat est assez intuitif et signifie globalement que plus un individu est rapide, moins il sera résistant.  
-```{r}
+Cependant il y a des exceptions, ainsi la vitesse est légèrement négativement corrélée avec les HP et la Défense. Ce résultat est assez intuitif et signifie globalement que plus un individu est rapide, moins il serait résistant.  
+```{r, fig.width=6, fig.height=2.5}
 ggplot(data = Data, aes(Data$Speed, Data$HP)) + geom_point() + ggtitle("Speed vs HP") + xlab("Speed") + ylab("HP") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill=FALSE)
 
 ```
-Sur le graphique nous voyons que cette corrélation est assez légère.
+Sur le graphique nous voyons que cette corrélation est pratiquement négligeable.
 
 Voici les autres relations intéressantes : 
 
 * L'attaque et la défense sont positivement corrélées. 
 * L'attaque spéciale et la défense spéciale sont également positivement corrélées
 
-```{r}
+```{r, fig.width=6, fig.height=3}
 par(mfrow = c(1,2))
 plot(Data$Attack, Data$Defense, xlab = "Attack", ylab = "Defense", main = "Attack vs Defense")
 plot(Data$Sp..Atk, Data$Sp..Def, xlab = "Attack Sp.", ylab = "Defense Sp.", main = "Attack Sp. vs Defense Sp.")
@@ -164,25 +168,82 @@ Nous allons maintenant passer à l'analyse en composantes principales de notre j
 ```{r}
 library(knitr)
 library(FactoMineR)
-eigenvectors = eigen(cor(scale(DataPCA)))
-eigenvectors = eigenvectors$vectors
-colnames(eigenvectors) = c("E1", "E2", "E3", "E4", "E5", "E6")
+res.pca = PCA(as.matrix(DataPCA), ncp = 3, scale = T, graph = F)
+df = cbind(as.data.frame(res.pca$ind$coord), Data$Name, Data$Type.1)
 
-res.pca = PCA(as.matrix(DataPCA), ncp = 6, scale = T)
+
+ggplot(df, aes(df$Dim.1, df$Dim.2, colour = df$`Data$Type.1`)) + geom_point() + theme_bw() + ggtitle("Principal component analysis") + xlab(paste("Dim. 1 : ", round(res.pca$eig[1,2],2), "%")) + ylab(paste("Dim. 2 :", round(res.pca$eig[2,2],2), "%")) + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) + geom_text(aes(label=Data$Name),hjust=0.5, vjust=-0.5) + scale_color_manual(values = c("#A6B91A", "#6F35FC", "#F7D02C", "#D685AD", "#C22E28", "#EE8130", "#735797", "#7AC74C", "#E2BF65", "#96D9D6", "#A8A77A", "#A33EA1", "#F95587", "#B6A136", "#6390F0"))
+
 
 ```
+
+```{r}
+library(knitr)
+kable(res.pca$eig)
+```
+
+Ce tableau nous indique que les trois premières dimensions conservent environ 75% de la variance.
 
 ####Corrélation des axes et des variables
 ```{r}
-kable(res.pca$var$cor, caption = )
+kable(res.pca$var$cor)
 ```
 
+Sur le tableau ci-dessus, nous observons que la première dimension est assez bien caractérisée par toutes les variables (particulièrement l'attaque spéciale et la défense spéciale), seules la vitesse et la défense dont légèrement moins bien représentées. 
+
+Celles-ci sont en revanche les deux variables caractérisant le plus la deuxième dimension.    
+Nous pouvons donc dire que le premier axe va représenter les caractéristiques générales d'un pokémon, tandis que le deuxième va plutôt nous indiquer la défense ou la rapidité d'un pokémon. 
+
+Comme la défense est positivement corrélée avec le deuxième axe (au contraire de la vitesse), on peut dire que plus un pokémon sera haut sur la deuxième dimension, plus il sera résistant (et à fortiori plus il sera lent).  
+Mais ces résultats restent influencés dans une mesure non négligeable par les autres variables et il faut en tenir compte. 
+
+Pour vérifier que le premier axe représente les caractéristiques générales d'un pokémon, nous pouvons vérifier que les évolutions d'un pokémon vont être representées de manière presque horizontale. (En évoluant un pokémon gagnera de toutes les statistiques). 
+
+Voici les 9 premières lignes du jeu de données, représentant trois pokémons et leurs évolutions :  
+
+```{r}
+
+ggplot(df[1:9,], aes(df$Dim.1[1:9], df$Dim.2[1:9], colour = df$`Data$Type.1`[1:9])) + geom_point() + theme_bw() + ggtitle("Principal component analysis") + xlab(paste("Dim. 1 : ", round(res.pca$eig[1,2],2), "%")) + ylab(paste("Dim. 2 :", round(res.pca$eig[2,2],2), "%")) + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) + geom_text(aes(label=Data$Name[1:9]),hjust=0.5, vjust=-0.5) + ylim(c(-3.5,3.5)) + guides(fill=FALSE)
+
+
+kable(Data[1:9,1:11])
+
+```
+
+Nous pouvons en effet constater dans le tableau que les statistiques évoluent toutes de manière relativement uniforme et que les évolutions des pokémons se déplacent bien de manière similaire sur la première dimension.
+
+Nous avons aussi prédit précédemment que le deuxième axe indiquait la défense/vitesse d'un pokémon (respectivement vers le haut et vers le bas). 
+Ces résultats se confirment aussi puisque l'individu bleu est en effet le plus résistant et le rouge est le plus rapide.
+
+```{r}
+plot.PCA(res.pca, choix = "var")
+
+```
+
+La sphère des corrélations quant à elle nous indique la même chose que la matrice des corrélation étudiée dans la section sur l'analyse descriptive. 
 
 # Clustering 
+Passons maintenant au clustering de notre jeu de données. 
+Pour cette partie, comme les individus sont normalement distribués, nous utiliserons la classification hiérarchique.  
+Voici les résultats :  
+
+```{r}
+res.hcpc1 = HCPC(DataPCA, graph = F)
+par(mfrow = c(1,2))
+plot.HCPC(res.hcpc1, choice = "map")
+plot.HCPC(res.hcpc1, choice = "bar")
 
 
+```
+
+Le graphique en barres montre pourquoi nous divisons la population en 3 groupes différents. (Inter inertia => montre comment les groupes "s'éloignent")
+
+* Le premier groupe semble représenter les individus faibles. 
+* Le deuxième rassemble les individus puissants et rapides. 
+* Le troisième représente les individus puissants et résistants.
 
 # Analyse des correspondances
+
 
 
 
