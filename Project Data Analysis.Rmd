@@ -1,5 +1,5 @@
 ---
-title: "Projet LSTAT2110 - Analyse des donnÃƒÂ©es"
+title: "Projet LSTAT2110 - Analyse des données"
 author: "Ledune Lucien - 39301400 - DATS2M"
 date: 'Date de soumission : '
 output:
@@ -76,7 +76,7 @@ Les différentes variables sont :
 
 ```{r, echo = FALSE}
 #Preparing data
-Data = read.csv("https://raw.githubusercontent.com/dfghdf89/Pokemon-Data-Analysis-Project/master/Pokemon.csv", sep = ";")
+Data = read.csv("C:/Users/Lucien/Desktop/Pokemon-Data-Analysis-Project/Pokemon.csv", sep = ";")
 
 #Keeping gen1 only
 Data = subset(Data, Data$Generation == 1)
@@ -84,29 +84,19 @@ Data = subset(Data, Data$Generation == 1)
 ```
 
 
-Pour commencer nous pouvons observer la répartition des pokémons en fonction de certaines variables. Premièrement la distribution des pokémons en fonctions de leur type, ainsi que le nombre de légendaires. 
+Pour commencer nous pouvons observer la répartition des pokémons en fonction de certaines variables. Premièrement la distribution des pokémons en fonctions de leur type. 
 
 ```{r, echo = FALSE, fig.width=6, fig.height=2.5}
 library(ggplot2)
 ggplot(data = Data, aes(Data$Type.1, stat = "count", fill = Data$Type.1)) + geom_bar() + theme_bw() + scale_fill_manual(values = c("#A6B91A", "#6F35FC", "#F7D02C", "#D685AD", "#C22E28", "#EE8130", "#735797", "#7AC74C", "#E2BF65", "#96D9D6", "#A8A77A", "#A33EA1", "#F95587", "#B6A136", "#6390F0")) + ggtitle("Répartition par type") + xlab("Type") + ylab("Nombre") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill=FALSE)
 
-ggplot(data = Data, aes(Data$Legendary, stat = "count", fill = Data$Legendary)) + geom_bar() + ggtitle("Nombre de pokémons légendaires") + xlab("Légendaire") + ylab("Nombre") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill=FALSE)
 
 
 ```
 
 Nous pouvons observer sur le premier graphique que la répartition des spécimens par type est très inégale, certains type (water, normal,...) disposent d'un grand nombre d'individus contrairement à d'autres (dragon, fairy,...)  
-Sur le deuxième graphique nous pouvons voir que les pokémons légendaires sont très peu nombreux (il en existe 4 dans cette génération).  
 
-Le prochain graphique va comparer les pokémons légendaires aux autres en fonction de la somme de leur statistiques (variable "total").
-
-```{r}
-ggplot(data = Data, aes(Data$Legendary, Data$Total, colour = Data$Legendary)) + geom_point() + ggtitle("Statistiques légendaires vs normaux") + xlab("Légendaire") + ylab("Total") + theme(plot.title = element_text(hjust = 0.5)) 
-
-```
-
-Il évident au vu du graphique que les pokémons légendaires disposent, en moyenne, de statistiques bien plus élevées. Nous pourrons donc certainement les distinguer (ainsi que de nouveaux individus) des autres grâce à l'analyse discriminante linéaire.   
-
+\newpage
 Nous allons maintenant nous intéresser à la distribution des différentes statistiques.
 ```{r, fig.width=6, fig.height=2.5}
 plot(density(Data$Total), xlab = "Total", ylab = "Density", main = "Density of Total")
@@ -153,16 +143,22 @@ Voici les autres relations intéressantes :
 
 * L'attaque et la défense sont positivement corrélées. 
 * L'attaque spéciale et la défense spéciale sont également positivement corrélées
+* La défense spéciale et les HP le sont aussi.
 
 ```{r, fig.width=6, fig.height=3}
 par(mfrow = c(1,2))
 plot(Data$Attack, Data$Defense, xlab = "Attack", ylab = "Defense", main = "Attack vs Defense")
 plot(Data$Sp..Atk, Data$Sp..Def, xlab = "Attack Sp.", ylab = "Defense Sp.", main = "Attack Sp. vs Defense Sp.")
+
 ```
 
+```{r, fig.width=6, fig.height=3}
+plot(Data$Sp..Def, Data$HP, xlab = "Defense Sp.", ylab = "HP", main = "Defense Sp. vs HP")
 
+```
+
+\newpage
 # Analyse en Composantes Principales
-
 Nous allons maintenant passer à l'analyse en composantes principales de notre jeu de données.  
 
 ```{r}
@@ -215,19 +211,19 @@ Nous pouvons en effet constater dans le tableau que les statistiques évoluent t
 Nous avons aussi prédit précédemment que le deuxième axe indiquait la défense/vitesse d'un pokémon (respectivement vers le haut et vers le bas). 
 Ces résultats se confirment aussi puisque l'individu bleu est en effet le plus résistant et le rouge est le plus rapide.
 
-```{r}
+```{r, fig.width=6, fig.height=3}
 plot.PCA(res.pca, choix = "var")
 
 ```
 
-La sphère des corrélations quant à elle nous indique la même chose que la matrice des corrélation étudiée dans la section sur l'analyse descriptive. 
+La sphère des corrélations quant à elle nous indique la même chose que la matrice des corrélation étudiée dans la section sur l'analyse descriptive et l'analyse des variables représentants les dimensions de la PCA. 
 
 # Clustering 
 Passons maintenant au clustering de notre jeu de données. 
-Pour cette partie, comme les individus sont normalement distribués, nous utiliserons la classification hiérarchique.  
+Nous utiliserons une méthode non supervisée : la classification hiérarchique.
 Voici les résultats :  
 
-```{r}
+```{r, fig.width=6, fig.height=3}
 res.hcpc1 = HCPC(DataPCA, graph = F)
 par(mfrow = c(1,2))
 plot.HCPC(res.hcpc1, choice = "map")
@@ -244,11 +240,53 @@ Le graphique en barres montre pourquoi nous divisons la population en 3 groupes 
 
 # Analyse des correspondances
 
+Pour réaliser celle-ci, nous regarderons quelles sont les correspondances entre le type d'un pokémon et sa génération. (On reprend le jeu de donnée comprenant toutes les générations)
 
 
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4.5}
+Data = read.csv("C:/Users/Lucien/Desktop/Pokemon-Data-Analysis-Project/Pokemon.csv", sep = ";")
+invisible(CA(table(Data$Type.1, Data$Generation)))
+
+#Creating subsets
+subsets<-split(Data, Data$Type.1, drop=TRUE)
+
+
+
+```
+
+Sur le graphique nous pouvons observer les relations entre les différents types et les générations.  
+
+Nous pouvons en déduire :  
+* Le type poison semble être plus présent dans la première génération que dans les autres (La liste des générations des pokémons poisons sera affichée en dessous pour vérifier, ce sera aussi le cas pour les autres conclusions). 
+```{r}
+subsets[["Poison"]][["Generation"]]
+```
+
+* Les types fairy, ghost et flying sont plus présents dans la 6ème génération que dans les autres.  
+```{r}
+subsets[["Fairy"]][["Generation"]]
+subsets[["Ghost"]][["Generation"]]
+subsets[["Flying"]][["Generation"]]
+
+```
+* Le type dark est proche de la 5ème génération. 
+```{r}
+subsets[["Dark"]][["Generation"]]
+
+```
+Les listes semblent bien confirmer nos dires.  
+
+Les autres types sont dans l'ensemble répartis de façon plus homogène. 
 
 # Conclusion
+Dans ce travail, nous avons analysés un jeu de donnée représenté les statistiques des différents pokémons. Nous avons globalement utilisé uniquement la première génération (151 premiers) sauf dans le cas de l'analyse des correspondance, où une analyse des types de pokémons par génétion pouvait être intéressante. 
 
+Premièrement l'analyse descriptive du jeu de donnée nous a indiqué que les statistiques (continues) des pokémons semblent toutes suivre une loi normale tandis que les types étaient distribués de façon assez inégale. Nous avons aussi pu mettre en évidence certains liens entre les statistiques grâce à la matrice de corrélation des variables. 
 
+Ensuite, l'analyse en composantes principales (ACP) nous a permis de réduire le nombre de dimensions de notre jeu de données tout en conservant une grande partie de l'information, afin de pouvoir représenter les pokémons sur un graphique où la signification des deux axes a été interprétée. Le sphère des corrélations utilisée dans cette méthode a pu confirmer nos résultats sur les liens entre les variables. 
 
-# Annexes
+De plus, le clustering (hiérarchique) nous a permis de classer de manière non supervisée les pokémons en différents groupes selon leur similarités au niveau des statistiques. 
+
+Enfin, l'analyse des correspondances (réalisée sur le set complet des 6 générations), nous a permis de découvrir l'existence de liens entre le type principal d'un pokémon et les différentes génération, et d'identifier quelles générations étaient plus propices à être composée d'un certains type de pokémon. 
+
+Dans l'ensemble, ce travail m'a permis d'appliquer les différentes méthodes vues au cours dans un cadre concret, et de réaliser une analyse complète d'un jeu de donnée dans le but d'en retirer des informations qui auraient étées bien plus difficiles a identifier sans la dite analyse. 
