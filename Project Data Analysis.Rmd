@@ -279,7 +279,7 @@ Les listes semblent bien confirmer nos dires.
 Les autres types sont dans l'ensemble répartis de façon plus homogène. 
 
 # Conclusion
-Dans ce travail, nous avons analysés un jeu de donnée représenté les statistiques des différents pokémons. Nous avons globalement utilisé uniquement la première génération (151 premiers) sauf dans le cas de l'analyse des correspondance, où une analyse des types de pokémons par génétion pouvait être intéressante. 
+Dans ce travail, nous avons analysés un jeu de données représentant les statistiques des différents pokémons. Nous avons globalement utilisé uniquement la première génération (151 premiers) sauf dans le cas de l'analyse des correspondance, où une analyse des types de pokémons par génétion pouvait être intéressante. 
 
 Premièrement l'analyse descriptive du jeu de donnée nous a indiqué que les statistiques (continues) des pokémons semblent toutes suivre une loi normale tandis que les types étaient distribués de façon assez inégale. Nous avons aussi pu mettre en évidence certains liens entre les statistiques grâce à la matrice de corrélation des variables. 
 

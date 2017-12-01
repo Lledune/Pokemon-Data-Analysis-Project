@@ -7,7 +7,7 @@ library(FactoMineR)
 library(MASS)
 
 #Preparing data
-Data = read.csv("https://raw.githubusercontent.com/dfghdf89/Pokemon-Data-Analysis-Project/master/Pokemon.csv", sep = ";")
+Data = read.csv("C:/Users/Lucien/Desktop/Pokemon-Data-Analysis-Project/Pokemon.csv", sep = ";")
 
 #Keeping gen1 only
 Data = subset(Data, Data$Generation == 1)
@@ -27,6 +27,8 @@ DataPCA = apply(DataPCA, 2, as.numeric)
 #PCA Analysis of the Data.
 plot.HCPC(reS.hcpc, tree.barplot  = T, choice = "bar")
 
+#creating contingency table
+CA(table(Data$Type.1, Data$Generation))
 
 
 
